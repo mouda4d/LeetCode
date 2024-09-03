@@ -1,0 +1,40 @@
+/* Write your T-SQL query statement below */
+WITH count_confirmed AS (
+    SELECT
+        Signups.user_id, COUNT(CASE WHEN action = 'confirmed' THEN 1 ELSE NULL END) AS N_confirmed
+    FROM
+        Signups
+    LEFT JOIN
+        Confirmations
+    ON
+        Signups.user_id = Confirmations.user_id
+    GROUP BY 
+        Signups.user_id
+)
+
+, count_total AS (
+    SELECT
+        Signups.user_id, CAST(COUNT(1) AS FLOAT) AS N_total
+    FROM
+        Signups
+    LEFT JOIN
+        Confirmations
+    ON
+        Signups.user_id = Confirmations.user_id
+    GROUP BY 
+        Signups.user_id
+)
+
+SELECT 
+    count_total.user_id,
+    ROUND(CAST((N_confirmed / N_total) AS FLOAT), 2) AS confirmation_rate 
+FROM
+    count_total
+LEFT JOIN
+    count_confirmed
+ON
+    count_total.user_id = count_confirmed.user_id
+
+
+
+
