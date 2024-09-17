@@ -1,0 +1,15 @@
+/* Write your T-SQL query statement below */
+SELECT 
+    DISTINCT num AS ConsecutiveNums
+FROM
+    (
+        SELECT 
+            id, num, 
+            LAG(id, 2) OVER (ORDER BY id) as lagged,  
+            LAG(id, 2) OVER (PARTITION BY num ORDER BY id) as lagged_partition
+
+        FROM
+            Logs
+   ) windowed
+WHERE
+    lagged = lagged_partition
