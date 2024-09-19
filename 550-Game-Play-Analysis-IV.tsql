@@ -1,0 +1,36 @@
+WITH first_login AS (
+    -- Get the first login date for each player
+    SELECT
+        player_id,
+        MIN(event_date) AS first_login_date
+    FROM
+        Activity
+    GROUP BY
+        player_id
+),
+consec as (
+    SELECT
+        player_id, 
+        event_date,
+ --       lead(event_date) OVER (PARTITION BY player_ID ORDER BY event_date) as lead_date,
+        DATEDIFF(day,
+        event_date , 
+        lead(event_date) OVER 
+        (PARTITION BY player_ID ORDER BY event_date)) as diff
+    FROM
+        Activity
+)
+SELECT 
+    ROUND((count(first_login.player_id) * 1.0 / (
+        SELECT COUNT(DISTINCT Activity.player_ID) FROM Activity
+        )), 2) AS fraction
+FROM 
+    consec 
+JOIN
+    first_login
+ON
+    consec.player_id = first_login.player_id 
+AND  
+    consec.event_date = first_login.first_login_date
+WHERE
+    diff = 1
